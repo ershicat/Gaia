@@ -1,0 +1,69 @@
+.overlay {
+  --overlay-opacity: 0.36;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 不要在这里加 backdrop-filter：全屏遮罩的模糊快照在弹窗卸载后会被 WebView 留在屏幕上，
+     表现为聊天区残留一块糊影，点一下才消失。只靠半透明底色压暗即可。 */
+  background-color: rgba(0, 0, 0, var(--overlay-opacity));
+
+  [data-ds-dark-theme] & {
+    --overlay-opacity: 0.6;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  padding: 22px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+  background-color: var(--dsw-alias-bg-layer-2);
+  box-shadow:
+    inset 0 0 0 1px var(--dsw-alias-border-inverted),
+    0 0 1px 0 rgba(0, 0, 0, 0.2),
+    0 0 4px 0 rgba(0, 0, 0, 0.02),
+    0 12px 32px 0 rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: var(--modal-header-gap, 12px);
+}
+
+.title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.close {
+  margin-right: -10px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.main {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}

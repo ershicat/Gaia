@@ -1,0 +1,24 @@
+declare const styles: {
+  readonly "overlay": string;
+  readonly "card": string;
+  readonly "head": string;
+  readonly "brand": string;
+  readonly "mark": string;
+  readonly "brandName": string;
+  readonly "version": string;
+  readonly "title": string;
+  readonly "subtitle": string;
+  readonly "body": string;
+  readonly "points": string;
+  readonly "point": string;
+  readonly "pointIcon": string;
+  readonly "pointText": string;
+  readonly "pointTitle": string;
+  readonly "pointDesc": string;
+  readonly "footer": string;
+  readonly "start": string;
+  readonly "hint": string;
+  readonly "fadeIn": string;
+  readonly "popIn": string;
+};
+export = styles;

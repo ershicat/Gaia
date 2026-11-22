@@ -1,0 +1,340 @@
+﻿.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-height: 56vh;
+  overflow: auto;
+}
+
+.rowWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.rowWrap > .rowFlex {
+  flex: 1;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.rowFlex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  min-width: 0;
+}
+
+.row:hover {
+  background: var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.04));
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #1f4d3f;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.bar:hover {
+  background: var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.04));
+}
+
+.avatarS {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: #1f4d3f;
+  overflow: hidden;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  /* 表单很长：必须自己滚，否则手机上「保存」被挤出屏幕外点不到 */
+  max-height: 56vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tip {
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.5;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(0, 0, 0, 0.12));
+  background: var(--dsw-alias-bg-base, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.range {
+  width: 100%;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.danger {
+  color: #d33a3a;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+
+.danger:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.metaName {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* 用户消息右上角：昵称 + 头像，右对齐 */
+.userMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.userMetaName {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.avatarXs {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #1f4d3f;
+  overflow: hidden;
+}
+
+/* 侧栏会话行的角色徽标（渲染在标题前，必须同排） */
+.badge {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  background: #1f4d3f;
+  overflow: hidden;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ---- 微信壳「通讯录」页：行内部排布（底色与分线由壳的 [data-shell-row] 给） ---- */
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 16px;
+}
+
+.contactBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 20px;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.contactBadgeAdd {
+  background: #07c160;
+}
+
+.contactBadgeMuted {
+  background: #c8c8c8;
+}
+
+.contactLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.contactHint {
+  flex: none;
+  font-size: 13px;
+  color: #b2b2b2;
+}
+
+.contactSectionLabel {
+  padding: 6px 16px;
+  background: #ededed;
+  font-size: 13px;
+  color: #888888;
+}
+
+:global(body.dark) .contactSectionLabel {
+  background: #111111;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:global(body.dark) .contactBadgeMuted {
+  background: #3a3a3a;
+}
+
+:global(body.dark) .contactHint {
+  color: rgba(255, 255, 255, 0.35);
+}

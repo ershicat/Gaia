@@ -1,0 +1,197 @@
+/* 更新公告：画中画卡片（盖一层蒙版，卡片居中，点空白处可关） */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 24px 20px;
+  background: rgba(16, 24, 20, 0.38);
+  animation: fadeIn 0.16s ease-out;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 358px;
+  max-height: 100%;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(11, 26, 20, 0.22), 0 2px 6px rgba(11, 26, 20, 0.08);
+  overflow: hidden;
+  animation: popIn 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.head {
+  flex: none;
+  padding: 20px 20px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1f4d3f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.brandName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f4d3f;
+}
+
+.version {
+  margin-left: auto;
+  font-size: 12px;
+  color: #8a938f;
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  margin-top: 14px;
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #14211c;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #5c6a64;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 20px 2px;
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.point {
+  display: flex;
+  gap: 10px;
+}
+
+.pointIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #eaf3ee;
+  color: #1f4d3f;
+}
+
+.pointIcon > svg {
+  width: 15px;
+  height: 15px;
+}
+
+.pointText {
+  min-width: 0;
+}
+
+.pointTitle {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #14211c;
+}
+
+.pointDesc {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #5c6a64;
+}
+
+.footer {
+  flex: none;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+}
+
+.start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 46px;
+  border: none;
+  border-radius: 23px;
+  background: #1f4d3f;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.start:active {
+  transform: scale(0.985);
+  opacity: 0.92;
+}
+
+.hint {
+  margin-top: 9px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: #8a938f;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+@media (max-height: 680px) {
+  .head {
+    padding-top: 16px;
+  }
+
+  .title {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+
+  .points {
+    gap: 10px;
+  }
+}

@@ -1,0 +1,344 @@
+/* 主题商城页面 + 主题/气泡/背景的实际样式。
+ *
+ * 主题相关规则一律用 :global()：它们挂在 <html> 的 data 属性上，必须是全局选择器；
+ * 页面自身的样式仍是模块内局部类名。
+ */
+
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: flex;
+  flex-direction: column;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--dsw-alias-line-1);
+}
+
+.back {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 40px;
+}
+
+.groupTitle {
+  margin: 20px 0 4px;
+  font-size: 13px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.groupTip {
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--dsw-alias-line-1);
+  background: var(--dsw-alias-bg-layer-2);
+  text-align: left;
+  color: inherit;
+}
+
+.cardActive {
+  border-color: var(--dsw-alias-brand-primary);
+  box-shadow: 0 0 0 1px var(--dsw-alias-brand-primary) inset;
+}
+
+.swatch {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-line-1);
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.desc {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #fff;
+  background: var(--dsw-alias-brand-primary);
+}
+
+/* ── 主题（配色）：覆盖 DeepSeek 设计变量 ────────────────────── */
+
+:global(html[data-gaia-skin='qq']) {
+  --dsw-alias-brand-primary: #12b7f5;
+  --dsw-alias-brand-text: #0e9fd6;
+  --dsw-specific-bubble: #e6f6fe;
+}
+
+:global(html[data-gaia-skin='wechat']) {
+  --dsw-alias-brand-primary: #07c160;
+  --dsw-alias-brand-text: #06a850;
+  --dsw-specific-bubble: #eafbf1;
+}
+
+:global(html[data-gaia-skin='paper']) {
+  --dsw-alias-brand-primary: #b4794a;
+  --dsw-alias-brand-text: #9a6238;
+  --dsw-specific-bubble: #f5ebdc;
+}
+
+:global(html[data-gaia-skin='night']) {
+  --dsw-alias-brand-primary: #8b5cf6;
+  --dsw-alias-brand-text: #a78bfa;
+  --dsw-specific-bubble: #2a2340;
+}
+
+/* ── 气泡：我方 [data-bubble="me"] 与助手 [data-bubble="ai"] 一起改 ── */
+
+:global(html[data-gaia-bubble='qq'] [data-bubble='me']) {
+  background-color: #12b7f5;
+  color: #ffffff;
+  border-radius: 18px 4px 18px 18px;
+}
+
+:global(html[data-gaia-bubble='qq'] [data-bubble='ai']) {
+  display: inline-block;
+  width: fit-content;
+  max-width: calc(100% - 8px);
+  padding: 10px 14px;
+  border-radius: 4px 18px 18px 18px;
+  /* 不能直接用 --dsw-alias-bg-layer-2：浅色主题下它就是页面底色，气泡会"白泡叠白底"看不见 */
+  background-color: #f1f2f4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) :global(html[data-gaia-bubble='qq'] [data-bubble='ai']) {
+  background-color: #26282c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+:global(html[data-gaia-bubble='wechat'] [data-bubble='me']) {
+  background-color: #95ec69;
+  color: #1a1a1a;
+  border-radius: 4px 18px 18px 18px;
+}
+
+:global(html[data-gaia-bubble='wechat'] [data-bubble='ai']) {
+  display: inline-block;
+  width: fit-content;
+  max-width: calc(100% - 8px);
+  padding: 10px 14px;
+  border-radius: 18px 4px 18px 18px;
+  background-color: #f1f2f4;
+  color: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) :global(html[data-gaia-bubble='wechat'] [data-bubble='ai']) {
+  background-color: #26282c;
+  color: #e8e8ec;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+:global(html[data-gaia-bubble='flat'] [data-bubble='me']) {
+  background-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+}:global(html[data-gaia-bubble='flat'] [data-bubble='ai']) {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* ── 透明气泡：半透明 + 背景模糊，能看见后面的背景 ───────────── */
+
+/**
+ * 用 rgba 而不是 opacity，这样文字不受影响；
+ * backdrop-filter 在旧 WebView 不支持时会退化成"半透明纯色"，仍然能看。
+ */
+:global(html[data-gaia-bubble='glass'] [data-bubble='me']) {
+  background-color: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #1a1a1a;
+  border-radius: 18px;
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+:global(html[data-gaia-bubble='glass'] [data-bubble='ai']) {
+  display: inline-block;
+  width: fit-content;
+  max-width: calc(100% - 8px);
+  padding: 10px 14px;
+  border-radius: 18px;
+  background-color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #1a1a1a;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+:global(body.dark) :global(html[data-gaia-bubble='glass'] [data-bubble='me']) {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #f2f2f5;
+}
+
+:global(body.dark) :global(html[data-gaia-bubble='glass'] [data-bubble='ai']) {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #e8e8ec;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* 星夜是深底背景：深色玻璃，别用浅色 */
+:global(html[data-gaia-background='stars'][data-gaia-bubble='glass'] [data-bubble='me']) {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f2f0fa;
+}
+
+:global(html[data-gaia-background='stars'][data-gaia-bubble='glass'] [data-bubble='ai']) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ece9f6;
+}
+
+/* ── 输入框：只在使用背景时改透明，默认背景保持现在的白胶囊 ─────── */
+
+/**
+ * 白胶囊压在渐变/图片背景上太突兀：背景非「默认」时，
+ * 输入框换成半透明玻璃、底部托底条改成磨砂（不然那层白渐变会把背景盖掉一截）。
+ * 挂点是 ChatInput 的 data-gaia-input 与 SessionView 的 data-gaia-input-dock。
+ */
+:global(html:not([data-gaia-background='none']) [data-gaia-input]) {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+
+:global(html:not([data-gaia-background='none']) [data-gaia-input-dock]) {
+  background: transparent;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+:global(body.dark) :global(html:not([data-gaia-background='none']) [data-gaia-input]) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:global(html[data-gaia-background='stars'] [data-gaia-input]) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── 背景：铺在聊天区，不挡内容 ─────────────────────────────── */
+
+:global(html[data-gaia-background='mist'] [data-chat-surface]) {
+  background-image: linear-gradient(180deg, #f7f9fb 0%, #eef2f6 100%);
+}
+
+:global(html[data-gaia-background='blue'] [data-chat-surface]) {
+  background-image: linear-gradient(180deg, #e8f0ff 0%, #f3eaff 100%);
+}
+
+:global(html[data-gaia-background='paper'] [data-chat-surface]) {
+  background-color: #fbf7ef;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(180, 121, 74, 0.06) 0 2px, transparent 2px),
+    radial-gradient(circle at 70% 60%, rgba(180, 121, 74, 0.05) 0 2px, transparent 2px);
+  background-size: 96px 96px, 132px 132px;
+}
+
+/**
+ * 星夜是深底，必须同时把聊天区里的文字与气泡底色换成浅色系，
+ * 否则默认的深色文字会「啥也看不见」（覆盖变量只在聊天区内生效，不影响设置页）。
+ */
+:global(html[data-gaia-background='stars'] [data-chat-surface]) {
+  background-color: #14121c;
+  background-image:
+    radial-gradient(1.5px 1.5px at 24px 32px, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 96px 84px, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 168px 40px, rgba(255, 255, 255, 0.4) 50%, transparent 51%);
+  background-size: 220px 160px;
+  --dsw-alias-label-primary: #ece9f6;
+  --dsw-alias-label-secondary: #cbc5dd;
+  --dsw-alias-label-tertiary: #948da9;
+  --dsw-alias-bg-layer-2: #241f33;
+  --dsw-alias-bg-layer-3: #2b2540;
+  --dsw-specific-bubble: #3a3159;
+}
+
+:global(html[data-gaia-background='stars'] [data-chat-surface] [data-bubble='ai']) {
+  background-color: #241f33;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-gaia-background='stars'] [data-chat-surface] [data-bubble='me']) {
+  background-color: #3a3159;
+  color: #f2f0fa;
+}
+
+:global(body.dark) :global(html[data-gaia-background='mist'] [data-chat-surface]) {
+  background-image: linear-gradient(180deg, #1b1e24 0%, #22262e 100%);
+}
+
+:global(body.dark) :global(html[data-gaia-background='blue'] [data-chat-surface]) {
+  background-image: linear-gradient(180deg, #1a2030 0%, #241f33 100%);
+}
+
+:global(body.dark) :global(html[data-gaia-background='paper'] [data-chat-surface]) {
+  background-color: #211d18;
+}

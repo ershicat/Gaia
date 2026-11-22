@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Gaia</title>
+    <script>
+      // 启动兜底（写在业务包之前，纯 DOM、不依赖 React）。
+      // 整包解析失败、或某个模块在 import 阶段就抛错时，业务代码一行都跑不到，
+      // 应用内的错误边界和诊断导出都用不上——这里把原因留在屏幕上，用户截图即可。
+      ;(function () {
+        var shown = false
+
+        var root = function () {
+          return document.getElementById('root')
+        }
+
+        /** 已经画出界面就不再插手：后续的运行时错误交给应用自己的错误边界 */
+        var mounted = function () {
+          var el = root()
+          return !!el && el.childElementCount > 0
+        }
+
+        function show(detail) {
+          var el = root()
+          if (shown || mounted() || !el) {
+            return
+          }
+          shown = true
+          var text = String(detail || '未知错误')
+          el.innerHTML = ''
+
+          var box = document.createElement('div')
+          box.style.cssText =
+            'position:fixed;left:0;top:0;right:0;bottom:0;overflow:auto;padding:24px 20px;' +
+            'background:#F8F8F8;color:#1F2329;font:16px/1.6 system-ui,-apple-system,sans-serif;' +
+            '-webkit-text-size-adjust:none'
+
+          var title = document.createElement('div')
+          title.style.cssText = 'font-size:20px;font-weight:600'
+          title.textContent = 'Gaia 启动失败'
+          box.appendChild(title)
+
+          var tip = document.createElement('div')
+          tip.style.cssText = 'margin-top:8px;color:#5A5F66'
+          tip.textContent = '界面没能画出来。把下面这段文字（或直接截图这一屏）发给开发者，就能定位。'
+          box.appendChild(tip)
+
+          var pre = document.createElement('pre')
+          pre.style.cssText =
+            'margin:12px 0 0;padding:12px;max-height:45vh;overflow:auto;border-radius:12px;' +
+            'background:#fff;border:1px solid #E5E5E5;color:#A33;font-size:12px;line-height:1.5;' +
+            'white-space:pre-wrap;word-break:break-all'
+          pre.textContent = text
+          box.appendChild(pre)
+
+          var copy = document.createElement('button')
+          copy.type = 'button'
+          copy.textContent = '复制错误信息'
+          copy.style.cssText =
+            'display:block;width:100%;margin-top:12px;padding:12px 16px;border:none;border-radius:12px;' +
+            'background:#1F2329;color:#fff;font-size:15px'
+          copy.onclick = function () {
+            var done = function (ok) {
+              copy.textContent = ok ? '已复制，粘贴发给开发者' : '复制失败，请截图这一屏'
+            }
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(
+                  function () {
+                    done(true)
+                  },
+                  function () {
+                    done(false)
+                  }
+                )
+                return
+              }
+            } catch (error) {
+              // 老 WebView 没有剪贴板 API，退回手动选择
+            }
+            done(false)
+          }
+          box.appendChild(copy)
+
+          var retry = document.createElement('button')
+          retry.type = 'button'
+          retry.textContent = '重新加载'
+          retry.style.cssText =
+            'display:block;width:100%;margin-top:8px;padding:12px 16px;border:1px solid #D9D9D9;' +
+            'border-radius:12px;background:#fff;color:#1F2329;font-size:15px'
+          retry.onclick = function () {
+            location.reload()
+          }
+          box.appendChild(retry)
+
+          el.appendChild(box)
+        }
+
+        window.addEventListener(
+          'error',
+          function (event) {
+            // 资源 404 也会进这里（没有 message、没有 error），忽略它们
+            if (!event || (!event.error && !event.message)) {
+              return
+            }
+            var detail = event.error && event.error.stack ? event.error.stack : event.message
+            show(detail)
+          },
+          true
+        )
+
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event && event.reason
+          var detail = reason && reason.stack ? reason.stack : reason
+          if (reason !== undefined) {
+            show(detail)
+          }
+        })
+
+        // 10 秒还没画出任何东西：可能包没加载成功。只在 root 完全为空时才提示，避免误伤慢机器
+        setTimeout(function () {
+          if (!mounted()) {
+            show('启动超时：界面 10 秒内没有渲染出来。如果一直停在这一屏，请截图发给开发者。')
+          }
+        }, 10000)
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

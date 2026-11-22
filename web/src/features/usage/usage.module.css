@@ -1,0 +1,10 @@
+.bar {
+  padding: 6px 4px 2px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,96 @@
+/*
+ * 主题 · 气泡 · 背景的实际样式。
+ *
+ * 全部挂在 <html> 的 data 属性上：
+ *   html[data-gaia-skin="qq"]      → 覆盖设计变量（强调色、气泡底色、聊天底色）
+ *   html[data-gaia-bubble="qq"]    → 覆盖 [data-bubble="me"] 的形状与配色
+ *   html[data-gaia-background="…"] → 给 [data-chat-surface] 铺背景
+ * 默认项（ds / none）不写规则，等于保持现状。
+ */
+
+/* ── 主题：覆盖 DeepSeek 的设计变量 ─────────────────────────────── */
+
+html[data-gaia-skin='qq'] {
+  --dsw-alias-brand-primary: #12b7f5;
+  --dsw-alias-brand-text: #0e9fd6;
+  --dsw-specific-bubble: #e6f6fe;
+}
+
+html[data-gaia-skin='wechat'] {
+  --dsw-alias-brand-primary: #07c160;
+  --dsw-alias-brand-text: #06a850;
+  --dsw-specific-bubble: #eafbf1;
+}
+
+html[data-gaia-skin='paper'] {
+  --dsw-alias-brand-primary: #b4794a;
+  --dsw-alias-brand-text: #9a6238;
+  --dsw-specific-bubble: #f5ebdc;
+}
+
+html[data-gaia-skin='night'] {
+  --dsw-alias-brand-primary: #8b5cf6;
+  --dsw-alias-brand-text: #a78bfa;
+  --dsw-specific-bubble: #2a2340;
+}
+
+/* ── 气泡：只改「我方」气泡，助手侧保持无底色（长文套厚泡很难看）── */
+
+html[data-gaia-bubble='qq'] [data-bubble='me'] {
+  background-color: #12b7f5;
+  color: #ffffff;
+  border-radius: 18px 4px 18px 18px;
+}
+
+html[data-gaia-bubble='wechat'] [data-bubble='me'] {
+  background-color: #95ec69;
+  color: #1a1a1a;
+  border-radius: 4px 18px 18px 18px;
+}
+
+html[data-gaia-bubble='flat'] [data-bubble='me'] {
+  background-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+}
+
+/* ── 背景：铺在聊天滚动区后面的独立层，不挡内容 ─────────────── */
+
+html[data-gaia-background='mist'] [data-chat-surface] {
+  background-image: linear-gradient(180deg, #f7f9fb 0%, #eef2f6 100%);
+}
+
+html[data-gaia-background='blue'] [data-chat-surface] {
+  background-image: linear-gradient(180deg, #e8f0ff 0%, #f3eaff 100%);
+}
+
+html[data-gaia-background='paper'] [data-chat-surface] {
+  background-color: #fbf7ef;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(180, 121, 74, 0.06) 0 2px, transparent 2px),
+    radial-gradient(circle at 70% 60%, rgba(180, 121, 74, 0.05) 0 2px, transparent 2px);
+  background-size: 96px 96px, 132px 132px;
+}
+
+html[data-gaia-background='stars'] [data-chat-surface] {
+  background-color: #14121c;
+  background-image:
+    radial-gradient(1.5px 1.5px at 24px 32px, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 96px 84px, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 168px 40px, rgba(255, 255, 255, 0.4) 50%, transparent 51%);
+  background-size: 220px 160px;
+}
+
+/* 深色主题下「星夜」保留原样，其余背景压暗一点，避免白得刺眼 */
+body.dark html[data-gaia-background='mist'] [data-chat-surface] {
+  background-image: linear-gradient(180deg, #1b1e24 0%, #22262e 100%);
+}
+
+body.dark html[data-gaia-background='blue'] [data-chat-surface] {
+  background-image: linear-gradient(180deg, #1a2030 0%, #241f33 100%);
+}
+
+body.dark html[data-gaia-background='paper'] [data-chat-surface] {
+  background-color: #211d18;
+}
