@@ -120,7 +120,7 @@ adb shell am start -n com.gaia.app/.MainActivity --ei memoryTriggerTurns -1 --ei
 
 ```powershell
 # 一条命令：tsc → 依赖图检查 → web 构建 → APK
-powershell -NoProfile -ExecutionPolicy Bypass -File <repo>\scripts\build-all.ps1 `
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-all.ps1 `
   -VersionName 0.1.0 -VersionCode 100
 ```
 

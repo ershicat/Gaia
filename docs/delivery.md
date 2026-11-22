@@ -8,7 +8,7 @@
 ## 目录
 
 ```
-<repo>\
+<repo>/
 ├─ web\        chat-demo fork（React + rspack，含 platform 与 features）
 ├─ android\    最小壳：WebView + LocalServer + 桥（2 个 Java 文件）
 ├─ scripts\    build-all.ps1（tsc→边界检查→web 构建→APK）、check-deps.mjs
@@ -19,7 +19,7 @@
 ## 出包
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File <repo>\scripts\build-all.ps1 `
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-all.ps1 `
   -VersionName 1.5.0 -VersionCode 1150
 ```
 
