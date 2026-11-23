@@ -20,6 +20,8 @@ import {
   useMemory,
 } from '../store.js'
 import { renderCard } from '../card.js'
+import { isStoryPath, renderCanonIndex, storyFilesForRole, storyIndexFor } from '../story.js'
+import { storyRoleOf } from '../storySession.js'
 
 /** 单个记忆文件：查看/编辑标题、描述、正文，或删除整个文件 */
 const FileEditor = ({ file, onClose }: { file: MemoryFile; onClose: () => void }) => {
@@ -88,6 +90,7 @@ export const MemoryPanel = () => {
   const autoCompress = useSettings((state) => state.autoCompress)
   const compressThreshold = useSettings((state) => state.compressThreshold)
   const sessionCard = useSettings((state) => state.sessionCard)
+  const storyModules = useSettings((state) => state.storyModules)
   const cards = useMemory((state) => state.cards)
   const cardBuilding = useMemory((state) => state.cardBuilding)
   const [editing, setEditing] = useState<string | null>(null)
@@ -99,6 +102,12 @@ export const MemoryPanel = () => {
   const trigger = numberOption('memoryTriggerTurns', TRIGGER_TURNS)
   const keep = numberOption('memoryKeepTurns', KEEP_RECENT_TURNS)
   const edited = editing ? files.find((file) => file.path === editing) : undefined
+  const roleId = sessionId ? storyRoleOf(sessionId) : ''
+  const storyFiles = roleId ? storyFilesForRole(files, roleId, storyModules) : []
+  const personalFiles = files.filter((file) => !isStoryPath(file.path))
+  const storyIndex = roleId ? storyIndexFor(files, roleId, storyModules) : null
+  // 面板用 canon 索引，不带 <story_memory> 提示词标签
+  const storyPreview = storyIndex ? renderCanonIndex(storyIndex, storyModules, 2000) : ''
 
   if (!open) {
     return null
@@ -197,6 +206,42 @@ export const MemoryPanel = () => {
             </div>
           )}
 
+          <div className={styles.tip}>
+            故事记忆（当前角色）
+            {storyModules.enabled ? '' : ' · 设置里已关闭'}
+          </div>
+          <div className={styles.tip}>
+            人物 {storyModules.characters ? '开' : '关'} · 大纲 {storyModules.outline ? '开' : '关'} ·
+            事件 {storyModules.events ? '开' : '关'} · 世界观 {storyModules.world ? '开' : '关'}
+            {' · 按角色隔离'}
+          </div>
+          {!roleId ? (
+            <div className={styles.tip}>
+              本会话没有角色归属（导入/历史会话），不启用故事记忆。
+            </div>
+          ) : !storyModules.enabled ? (
+            <div className={styles.tip}>
+              已关闭：不再注入也不再整理，已有故事文件仍保留。
+            </div>
+          ) : storyPreview ? (
+            <pre className={styles.body}>{storyPreview}</pre>
+          ) : (
+            <div className={styles.tip}>
+              还没有故事记忆。默认聊几轮后空闲两分钟自动整理；也可以在设置 → 聊天里只开需要的模块。
+            </div>
+          )}
+          {storyFiles.map((file) => (
+            <button
+              key={file.path}
+              type="button"
+              className={styles.fileRow}
+              onClick={() => setEditing(file.path)}
+            >
+              <span className={styles.fileTitle}>{file.title || file.path}</span>
+              <span className={styles.hint}>{file.description || file.path}</span>
+            </button>
+          ))}
+
           <div className={styles.tip}>会话配角（本会话）· 命中触发词才注入，不进系统提示词</div>
           <button
             type="button"
@@ -207,17 +252,17 @@ export const MemoryPanel = () => {
           </button>
 
           <div className={styles.tip}>
-            长期记忆 {files.length > 0 ? `· ${files.length} 个文件` : ''}
+            长期记忆（个人）{personalFiles.length > 0 ? ` · ${personalFiles.length} 个文件` : ''}
             {sessionId && lastRun[sessionId]
               ? ` · 上次整理 ${new Date(lastRun[sessionId]).toLocaleTimeString()}`
               : ''}
           </div>
-          {files.length === 0 ? (
+          {personalFiles.length === 0 ? (
             <div className={styles.tip}>
               还没有长期记忆。聊完空闲两分钟后会自动整理（「做梦」），也可以点下面的「立即整理」。
             </div>
           ) : (
-            files.map((file) => (
+            personalFiles.map((file) => (
               <button
                 key={file.path}
                 type="button"

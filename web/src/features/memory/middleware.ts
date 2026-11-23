@@ -10,8 +10,16 @@ import {
   sessionTokens,
 } from './budget.js'
 import { renderCard } from './card.js'
-import { recallArchive, recallMemoryFiles, renderArchiveHits, renderMemoryHits } from './memoryRecall.js'
+import {
+  recallArchive,
+  recallMemoryFiles,
+  renderArchiveHits,
+  renderMemoryHits,
+  renderStoryHits,
+} from './memoryRecall.js'
 import { recall } from './recall.js'
+import { isStoryPath, parseStoryPath, renderStoryBrief, storyFilesForRole, storyIndexFor } from './story.js'
+import { storyModules, storyRoleOf } from './storySession.js'
 import { cardOf, memoryFiles, summaryOf } from './store.js'
 
 const sessionCardEnabled = (): boolean => useSettings.getState().sessionCard
@@ -33,15 +41,49 @@ export const memoryMiddleware: RequestMiddleware = (ctx) => {
     return
   }
   // 记忆召回不依赖历史条数：新会话的第一条消息也该带上相关事实与原话
-  const files = memoryFiles()
-  const memoryNote = renderMemoryHits(recallMemoryFiles(files, ctx.question))
-  const archiveNote = renderArchiveHits(recallArchive(files, ctx.question))
-  const recallNotes = [memoryNote, archiveNote].filter(Boolean)
+  const allFiles = memoryFiles()
+  const roleId = storyRoleOf(ctx.sessionId)
+  const modules = storyModules()
+  const scopedStoryPaths = new Set(
+    roleId ? storyFilesForRole(allFiles, roleId, modules).map((file) => file.path) : []
+  )
+  // 只让当前角色的故事文件进入上下文；其它角色/导入会话的故事一律不可见
+  const visibleFiles = allFiles.filter(
+    (file) => !isStoryPath(file.path) || scopedStoryPaths.has(file.path)
+  )
+  const personalFiles = visibleFiles.filter((file) => !isStoryPath(file.path))
+  const storyRecallFiles = visibleFiles.filter((file) => {
+    const info = parseStoryPath(file.path)
+    return (
+      !!info &&
+      info.roleId === roleId &&
+      (info.module === 'events' || info.module === 'world')
+    )
+  })
+
+  const storyNote = roleId
+    ? renderStoryBrief(storyIndexFor(allFiles, roleId, modules), modules)
+    : ''
+  const memoryNote = renderMemoryHits(recallMemoryFiles(personalFiles, ctx.question))
+  const storyRecallNote = renderStoryHits(
+    recallMemoryFiles(storyRecallFiles, ctx.question, {
+      limit: 1,
+      linesPerFile: 3,
+      budget: 300,
+    })
+  )
+  const archiveNote = renderArchiveHits(recallArchive(visibleFiles, ctx.question))
+  const recallNotes = [memoryNote, storyRecallNote, archiveNote].filter(Boolean)
   const messages = chat().getMessages(ctx.sessionId)
   if (messages.length === 0) {
-    return recallNotes.length > 0
-      ? { ...ctx, tailNotes: [...ctx.tailNotes, ...recallNotes] }
-      : undefined
+    if (!storyNote && recallNotes.length === 0) {
+      return
+    }
+    return {
+      ...ctx,
+      tailNotes: [...ctx.tailNotes, ...recallNotes],
+      cardNote: storyNote,
+    }
   }
   const record = summaryOf(ctx.sessionId)
   const compressed = record?.turns ?? 0
@@ -56,10 +98,10 @@ export const memoryMiddleware: RequestMiddleware = (ctx) => {
 
   // 长期记忆：画像与偏好全文注入，其它文件只给清单（描述只是索引，不是内容）。
   // 原文档案不进清单：43 个文件会把 system 常驻段撑大，它们只在命中时按段注入。
-  if (files.length > 0) {
-    const profile = files.find((file) => file.path === '/profile.md')
-    const preferences = files.find((file) => file.path === '/preferences.md')
-    const others = files.filter(
+  if (personalFiles.length > 0) {
+    const profile = personalFiles.find((file) => file.path === '/profile.md')
+    const preferences = personalFiles.find((file) => file.path === '/preferences.md')
+    const others = personalFiles.filter(
       (file) =>
         file.path !== '/profile.md' &&
         file.path !== '/preferences.md' &&
@@ -96,9 +138,10 @@ export const memoryMiddleware: RequestMiddleware = (ctx) => {
     tailNotes.push(`## 与本次提问相关的历史片段\n${text}`)
   }
 
-  // 会话档案：放在窗口之后、召回之前。它是动态的，所以不进 system；但也不跟当前提问挤在同一条里。
+  // 会话档案 + 故事简报：放在窗口之后、召回之前。它们是动态的，所以不进 system；
+  // 但也不跟当前提问挤在同一条里。故事简报在前，档案的“当前剧情”优先级更高。
   const card = sessionCardEnabled() ? cardOf(ctx.sessionId) : undefined
-  const cardNote = card ? renderCard(card) : ''
+  const cardNote = [storyNote, card ? renderCard(card) : ''].filter(Boolean).join('\n\n')
   // 有档案卡时不丢历史（长度交给固定窗口），也不关续写前缀
   const dropTurns = cardMode ? 0 : compressed
 

@@ -12,6 +12,7 @@ import {
   setMemoryModel,
   setModel,
   setSessionCard,
+  setStoryModule,
   setThemePreference,
   setTitlePrompt,
   setTtsVoice,
@@ -203,6 +204,7 @@ const ChatPage = () => {
   const autoCompress = useSettings((state) => state.autoCompress)
   const compressThreshold = useSettings((state) => state.compressThreshold)
   const sessionCard = useSettings((state) => state.sessionCard)
+  const storyModules = useSettings((state) => state.storyModules)
   const [rounds, setRounds] = useState(String(roundLimit))
   const [prompt, setPrompt] = useState(titlePrompt)
   const [threshold, setThreshold] = useState(String(compressThreshold))
@@ -281,6 +283,59 @@ const ChatPage = () => {
           关系、世界要点、剧情进度、未完成线索。只取开头 8k + 最近 16k token 做样本，一次约 2~5 分钱，
           之后每 20 轮更新一次（约 2 分钱）。档案放在固定窗口之后，不影响提示词缓存；
           关掉后不再新建，已有档案也不再注入。档案可在「设置 → 记忆」里查看、重建或删除。
+        </div>
+      </div>
+
+      <div className={styles.block} style={{ marginTop: 16 }}>
+        <div className={styles.label}>故事记忆（人机恋 / 角色扮演）</div>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            checked={storyModules.enabled}
+            onChange={(event) => setStoryModule('enabled', event.target.checked)}
+          />
+          <span>启用故事记忆</span>
+        </label>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            disabled={!storyModules.enabled}
+            checked={storyModules.characters}
+            onChange={(event) => setStoryModule('characters', event.target.checked)}
+          />
+          <span>人物与关系</span>
+        </label>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            disabled={!storyModules.enabled}
+            checked={storyModules.outline}
+            onChange={(event) => setStoryModule('outline', event.target.checked)}
+          />
+          <span>关系线 / 大纲</span>
+        </label>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            disabled={!storyModules.enabled}
+            checked={storyModules.events}
+            onChange={(event) => setStoryModule('events', event.target.checked)}
+          />
+          <span>关键事件</span>
+        </label>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            disabled={!storyModules.enabled}
+            checked={storyModules.world}
+            onChange={(event) => setStoryModule('world', event.target.checked)}
+          />
+          <span>世界观（AU / 奇幻 / 科幻再开）</span>
+        </label>
+        <div className={styles.tip}>
+          按角色隔离，不会串到别的角色。默认人物 / 大纲 / 事件三开，世界观关。
+          关闭只停止注入和后续整理，已有文件保留；重新打开后下次「做梦」继续更新。
+          故事记忆与会话档案卡、配角库相互独立。
         </div>
       </div>
 
