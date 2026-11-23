@@ -78,6 +78,46 @@ export const saveMemoryFile = async (file: MemoryFile): Promise<void> => {
   await run<IDBValidKey>(STORE_FILES, 'readwrite', (s) => s.put(file))
 }
 
+export interface MemoryCommit {
+  /** 只传内容真正变化的文件 */
+  files: MemoryFile[]
+  watermarks?: Record<string, number>
+  lastRun?: Record<string, number>
+}
+
+/**
+ * 一次整理的结果原子落盘：文件 + watermark + lastRun 在同一个事务里。
+ * 中途失败会整体回滚，不会出现“文件写了、watermark 没动”或反过来。
+ */
+export const commitMemory = async (commit: MemoryCommit): Promise<void> => {
+  const db = await openDb()
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction([STORE_FILES, STORE_META], 'readwrite')
+    try {
+      const files = transaction.objectStore(STORE_FILES)
+      for (const file of commit.files) {
+        files.put(file)
+      }
+      const meta = transaction.objectStore(STORE_META)
+      if (commit.watermarks) {
+        meta.put(commit.watermarks, 'watermarks')
+      }
+      if (commit.lastRun) {
+        meta.put(commit.lastRun, 'lastRun')
+      }
+    } catch (error) {
+      transaction.abort()
+      reject(error)
+      return
+    }
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () =>
+      reject(transaction.error ?? new Error('gaia.memory commit failed'))
+    transaction.onabort = () =>
+      reject(transaction.error ?? new Error('gaia.memory commit aborted'))
+  })
+}
+
 export const deleteMemoryFile = async (path: string): Promise<void> => {
   await run<undefined>(STORE_FILES, 'readwrite', (s) => s.delete(path))
 }

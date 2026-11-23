@@ -5,17 +5,18 @@ import { setSessionCard, useSettings } from '../../services/settings.js'
 import { contextLimit, KEEP_RECENT_TURNS, TRIGGER_TURNS, sessionTokens } from './budget.js'
 import { advanceWatermark, consolidateSession, messageCount } from './consolidate.js'
 import {
+  commitMemory,
   deleteMemoryFile,
   loadLastRun,
   loadMemoryFiles,
   loadWatermarks,
   normalizePath,
   pathTitle,
-  saveLastRun,
   saveMemoryFile,
-  saveWatermarks,
   type MemoryFile,
 } from './files.js'
+import { expandStoryRootPath, looksLikeStoryPath, parseStoryPath, remapStoryPath } from './story.js'
+import { storyModules, storyRoleOf } from './storySession.js'
 import { deleteSummary, loadSummaries, saveSummary, splitTurns, type SummaryRecord } from './storage.js'
 import { buildSummaryText, turnsToCompress } from './summarize.js'
 import { CARD_SYSTEM_PROMPT, buildCardInput, parseCard, type SessionCard } from './card.js'
@@ -96,12 +97,17 @@ const pickList = (value: unknown): string[] =>
     ? value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
     : []
 
+/** 返回去掉某个 key 的新对象（避免 delete 动态键） */
+const omitKey = <T>(record: Record<string, T>, key: string): Record<string, T> =>
+  Object.fromEntries(Object.entries(record).filter(([id]) => id !== key))
+
 /**
  * 记忆文件导入（角色卡夹带 / 面板用）：按 path 去重。
  * 已存在同名文件一律跳过 —— 导入是「补一份新档案」，不该覆盖用户自己攒的记忆。
  */
 export const importMemoryFiles = async (
-  incoming: unknown[]
+  incoming: unknown[],
+  roleId?: string
 ): Promise<{ written: number; skipped: number }> => {
   const current = [...useMemory.getState().files]
   let written = 0
@@ -111,8 +117,20 @@ export const importMemoryFiles = async (
       continue
     }
     const item = raw as Record<string, unknown>
-    const path = normalizePath(pickText(item.path) || pickText(item.title))
-    if (!path) {
+    const normalized = normalizePath(pickText(item.path) || pickText(item.title))
+    if (!normalized) {
+      continue
+    }
+    const expanded = expandStoryRootPath(normalized, roleId ?? '')
+    const storyLike = looksLikeStoryPath(expanded)
+    if (storyLike && !roleId) {
+      skipped += 1
+      continue
+    }
+    const path = storyLike && roleId ? remapStoryPath(expanded, roleId) : expanded
+    // 角色卡夹带的路径可能千奇百怪：remap 后必须是合法的故事路径才收
+    if (storyLike && !parseStoryPath(path)) {
+      skipped += 1
       continue
     }
     const content = pickText(item.content).trim()
@@ -217,7 +235,7 @@ export const applyCardExtras = async (payload: {
       seeded = await seedCardForRole(payload.roleId, card)
     }
   }
-  const result = await importMemoryFiles(payload.memoryFiles)
+  const result = await importMemoryFiles(payload.memoryFiles, payload.roleId)
   // 预置卡只有在「会话档案卡」开关打开时才注入：导入时就替用户打开，省得他以为没生效
   if (seeded && !useSettings.getState().sessionCard) {
     setSessionCard(true)
@@ -310,9 +328,7 @@ export const maybeBuildCard = async (sessionId: string, force = false): Promise<
 /** 删掉某个会话的档案（下次发送会按当前开关重新生成） */
 export const removeCard = async (sessionId: string): Promise<void> => {
   await deleteCard(sessionId)
-  const cards = { ...useMemory.getState().cards }
-  delete cards[sessionId]
-  setState({ cards })
+  setState({ cards: omitKey(useMemory.getState().cards, sessionId) })
 }
 
 /**
@@ -328,21 +344,61 @@ export const runConsolidation = async (
     return 0
   }
   const count = messageCount(sessionId)
+  const roleId = storyRoleOf(sessionId)
+  const modules = storyModules()
   setState({ consolidating: true })
   diagRecord('info', 'memory', `开始整理记忆（${mode}）`, `已整理到 ${state.watermarks[sessionId] ?? 0} / 共 ${count} 条`)
   try {
-    const { result, files } = await consolidateSession(sessionId, state.files, state.watermarks)
-    const watermarks = advanceWatermark(state.watermarks, sessionId, count)
+    const outcome = await consolidateSession(sessionId, state.files, state.watermarks, {
+      roleId,
+      modules,
+    })
+    if (!outcome.ok) {
+      diagRecord('warn', 'memory', '整理失败：模型输出无法解析，watermark 不推进')
+      if (mode === 'manual') {
+        showToast('整理失败：模型返回格式无法解析，稍后重试')
+      }
+      return 0
+    }
+    if (outcome.rejected.length > 0) {
+      diagRecord(
+        'warn',
+        'memory',
+        `丢弃 ${outcome.rejected.length} 个非法写入`,
+        outcome.rejected.map((item) => `${item.path}:${item.reason}`).join(' ')
+      )
+    }
+    if (
+      outcome.nextWatermark === (state.watermarks[sessionId] ?? 0) &&
+      outcome.changedFiles.length === 0
+    ) {
+      if (mode === 'manual') {
+        showToast('这次没有值得记住的新内容')
+      }
+      return 0
+    }
+    const watermarks = advanceWatermark(
+      state.watermarks,
+      sessionId,
+      outcome.nextWatermark
+    )
     const lastRun = { ...state.lastRun, [sessionId]: Date.now() }
-    await Promise.all([saveWatermarks(watermarks), saveLastRun(lastRun)])
-    setState({ files, watermarks, lastRun })
-    diagRecord('info', 'memory', `整理完成：写入 ${result.written} 条`, result.files.join(' '))
-    if (result.written > 0) {
-      showToast(`已整理 ${result.written} 条记忆到 ${result.files.length} 个文件`)
+    await commitMemory({ files: outcome.changedFiles, watermarks, lastRun })
+    setState({ files: outcome.files, watermarks, lastRun })
+    diagRecord(
+      'info',
+      'memory',
+      `整理完成：写入 ${outcome.result.written} 条`,
+      outcome.result.files.join(' ')
+    )
+    if (outcome.result.written > 0) {
+      showToast(
+        `已整理 ${outcome.result.written} 条记忆到 ${outcome.result.files.length} 个文件`
+      )
     } else if (mode === 'manual') {
       showToast('这次没有值得记住的新内容')
     }
-    return result.written
+    return outcome.result.written
   } catch (error) {
     diagError('memory', error, '整理失败')
     if (mode === 'manual') {
@@ -477,8 +533,6 @@ export const compressIfNeeded = async (
 }
 
 export const clearSummary = async (sessionId: string): Promise<void> => {
-  const next = { ...useMemory.getState().summaries }
-  delete next[sessionId]
-  setState({ summaries: next })
+  setState({ summaries: omitKey(useMemory.getState().summaries, sessionId) })
   await deleteSummary(sessionId)
 }

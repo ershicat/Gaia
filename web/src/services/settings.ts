@@ -9,6 +9,24 @@ export type Locale = 'zh-CN' | 'en-US'
 /** 主题偏好；默认跟随系统 */
 export type ThemePreference = 'light' | 'dark' | 'system'
 
+/** 故事记忆：按角色隔离的长期故事状态（人物 / 大纲 / 事件 / 世界观） */
+export type StoryModules = {
+  enabled: boolean
+  characters: boolean
+  outline: boolean
+  events: boolean
+  world: boolean
+}
+
+/** 人机恋默认：人物 / 大纲 / 事件三开，世界观关 */
+export const DEFAULT_STORY_MODULES: StoryModules = {
+  enabled: true,
+  characters: true,
+  outline: true,
+  events: true,
+  world: false,
+}
+
 /** 本机设置，存 localStorage：API Key、模型、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态 */
 type Settings = {
   apiKey: string | null
@@ -28,6 +46,8 @@ type Settings = {
   memoryModel: ChatModel | null
   /** 会话档案卡（防 OOC）：默认关；打开后 ≥40 轮的长会话在首次发送时建一次档案 */
   sessionCard: boolean
+  /** 故事记忆模块开关；按角色隔离，关闭只停止注入/整理，文件保留 */
+  storyModules: StoryModules
   locale: Locale
   themePreference: ThemePreference
   location: UserLocation | null
@@ -47,6 +67,7 @@ const KEYS = {
   compressThreshold: 'gaia:compress-threshold',
   memoryModel: 'gaia:memory-model',
   sessionCard: 'gaia:session-card',
+  storyModules: 'gaia:story-modules',
   locale: 'chat-demo:locale',
   location: 'chat-demo:location',
   themePreference: 'chat-demo:theme-preference',
@@ -158,6 +179,24 @@ const initialMemoryModel = (): ChatModel | null => {
   return saved && MODELS.some((item) => item.id === saved) ? (saved as ChatModel) : null
 }
 
+const asBool = (value: unknown, fallback: boolean): boolean =>
+  typeof value === 'boolean' ? value : fallback
+
+const initialStoryModules = (): StoryModules => {
+  try {
+    const raw = JSON.parse(read(KEYS.storyModules) ?? 'null') as Partial<StoryModules> | null
+    return {
+      enabled: asBool(raw?.enabled, DEFAULT_STORY_MODULES.enabled),
+      characters: asBool(raw?.characters, DEFAULT_STORY_MODULES.characters),
+      outline: asBool(raw?.outline, DEFAULT_STORY_MODULES.outline),
+      events: asBool(raw?.events, DEFAULT_STORY_MODULES.events),
+      world: asBool(raw?.world, DEFAULT_STORY_MODULES.world),
+    }
+  } catch {
+    return { ...DEFAULT_STORY_MODULES }
+  }
+}
+
 export const useSettings = create<Settings>(() => ({
   apiKey: read(KEYS.apiKey),
   model: initialModel(),
@@ -168,6 +207,7 @@ export const useSettings = create<Settings>(() => ({
   compressThreshold: initialCompressThreshold(),
   memoryModel: initialMemoryModel(),
   sessionCard: read(KEYS.sessionCard) === 'true',
+  storyModules: initialStoryModules(),
   locale: initialLocale(),
   location: initialLocation(),
   themePreference: initialThemePreference(),
@@ -218,6 +258,18 @@ export const setCompressThreshold = (threshold: number) => {
 export const setSessionCard = (sessionCard: boolean) => {
   write(KEYS.sessionCard, String(sessionCard))
   useSettings.setState({ sessionCard })
+}
+
+export const setStoryModules = (storyModules: StoryModules) => {
+  write(KEYS.storyModules, JSON.stringify(storyModules))
+  useSettings.setState({ storyModules })
+}
+
+export const setStoryModule = <K extends keyof StoryModules>(
+  key: K,
+  value: StoryModules[K]
+) => {
+  setStoryModules({ ...useSettings.getState().storyModules, [key]: value })
 }
 
 export const setMemoryModel = (memoryModel: ChatModel | null) => {

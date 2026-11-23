@@ -205,6 +205,23 @@ export const renderMemoryHits = (hits: MemoryRecallHit[]): string => {
   return lines.join('\n')
 }
 
+/** 故事细节召回：只取 events/world 里命中的行，避免和故事简报重复 */
+export const renderStoryHits = (hits: MemoryRecallHit[]): string => {
+  if (hits.length === 0) {
+    return ''
+  }
+  const lines = [
+    '## 故事记忆·相关片段（历史剧情细节；与故事简报冲突时以简报/最近对话为准）',
+  ]
+  for (const hit of hits) {
+    lines.push(`### ${hit.title}`)
+    for (const line of hit.lines) {
+      lines.push(`- ${line}`)
+    }
+  }
+  return lines.join('\n')
+}
+
 export interface ArchiveHit {
   /** 文件标题（含日期与段号，例如「原文 2026-11-13（2/4）」） */
   title: string
